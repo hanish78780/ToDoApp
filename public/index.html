@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo App</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* Form Styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* List Styling */
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .todo-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .todo-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary);
+        }
+
+        .todo-content {
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+
+        .todo-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+
+        .todo-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-break: break-all;
+        }
+        
+        .todo-meta {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 6px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit {
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        .btn-edit:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-delete {
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        .btn-delete:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* Loading & Empty States */
+        .message {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Edit Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+            transform: translateY(20px);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        .btn-cancel:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .modal-actions button {
+            flex: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Tasks</h1>
+            <p class="subtitle">Organize your workflow creatively</p>
+        </header>
+
+        <!-- Create Task Form -->
+        <div class="card">
+            <form id="create-form">
+                <div class="form-group">
+                    <input type="text" id="titleInput" placeholder="Task Title" required autocomplete="off" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <textarea id="descInput" placeholder="Task Description..." required maxlength="500"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" id="addBtn">
+                    <svg style="width:20px;height:20px;vertical-align:middle;margin-right:8px;" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                    </svg>
+                    Add Task
+                </button>
+            </form>
+        </div>
+
+        <!-- Task List Container -->
+        <div id="todosContainer" class="todo-list">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="card modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Edit Task</h2>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <input type="text" id="editTitleInput" required autocomplete="off" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <textarea id="editDescInput" required maxlength="500"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveEditBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1';
+        const todosContainer = document.getElementById('todosContainer');
+        const createForm = document.getElementById('create-form');
+        const addBtn = document.getElementById('addBtn');
+        
+        // Modal elements
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('edit-form');
+        const saveEditBtn = document.getElementById('saveEditBtn');
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', fetchTodos);
+
+        // Fetch All Todos
+        async function fetchTodos() {
+            try {
+                const res = await fetch(`${API_BASE}/getTodos`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    renderTodos(data.data);
+                } else {
+                    todosContainer.innerHTML = `<div class="message">Failed to load tasks.</div>`;
+                }
+            } catch (error) {
+                console.error("Error fetching todos:", error);
+                todosContainer.innerHTML = `<div class="message">Server error. Make sure the backend is running.</div>`;
+            }
+        }
+
+        // Render Todos to screen
+        function renderTodos(todos) {
+            todosContainer.innerHTML = ''; // clear loading state
+
+            if (todos.length === 0) {
+                todosContainer.innerHTML = `<div class="message">You have no tasks pending. Woohoo! 🎉</div>`;
+                return;
+            }
+
+            // Reverse to show newest first
+            const sortedTodos = todos.sort((a,b) => new Date(b.cretedAt) - new Date(a.cretedAt));
+
+            sortedTodos.forEach(todo => {
+                const formattedDate = new Date(todo.cretedAt).toLocaleDateString(undefined, {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+                });
+
+                const todoEl = document.createElement('div');
+                todoEl.className = 'todo-item';
+                todoEl.innerHTML = `
+                    <div class="todo-content">
+                        <div class="todo-title">${escapeHTML(todo.title)}</div>
+                        <div class="todo-desc">${escapeHTML(todo.description)}</div>
+                        <span class="todo-meta">Added: ${formattedDate}</span>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="btn-icon btn-edit" title="Edit" onclick="openEditModal('${todo._id}', \`${escapeJS(todo.title)}\`, \`${escapeJS(todo.description)}\`)">
+                            <svg style="width:20px;height:20px" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                            </svg>
+                        </button>
+                        <button class="btn-icon btn-delete" title="Delete" onclick="deleteTodo('${todo._id}')">
+                            <svg style="width:20px;height:20px" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                todosContainer.appendChild(todoEl);
+            });
+        }
+
+        // Create Todo
+        createForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('titleInput').value.trim();
+            const description = document.getElementById('descInput').value.trim();
+
+            if(!title || !description) return;
+
+            addBtn.innerHTML = 'Adding...';
+            addBtn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/createTodo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+                
+                if (res.ok) {
+                    createForm.reset();
+                    fetchTodos(); // Refresh list
+                } else {
+                    alert("Failed to create task");
+                }
+            } catch (error) {
+                console.error("Error creating todo:", error);
+                alert("Server error occurred");
+            } finally {
+                addBtn.innerHTML = `<svg style="width:20px;height:20px;vertical-align:middle;margin-right:8px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg> Add Task`;
+                addBtn.disabled = false;
+            }
+        });
+
+        // Delete Todo
+        async function deleteTodo(id) {
+            
+            try {
+                const res = await fetch(`${API_BASE}/deleteTodo/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    fetchTodos();
+                } else {
+                    alert("Failed to delete task");
+                }
+            } catch (error) {
+                console.error("Delete error:", error);
+            }
+        }
+
+        // Edit Modal Handlers
+        function openEditModal(id, title, desc) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editTitleInput').value = title;
+            document.getElementById('editDescInput').value = desc;
+            editModal.classList.add('active');
+        }
+
+        function closeEditModal() {
+            editModal.classList.remove('active');
+        }
+
+        editModal.addEventListener('click', closeEditModal); // close on background click
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const title = document.getElementById('editTitleInput').value.trim();
+            const description = document.getElementById('editDescInput').value.trim();
+
+            if(!title || !description) return;
+
+            saveEditBtn.textContent = 'Saving...';
+            saveEditBtn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/updateTodo/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+                
+                if (res.ok) {
+                    closeEditModal();
+                    fetchTodos();
+                } else {
+                    alert("Failed to update task");
+                }
+            } catch (error) {
+                console.error("Update error:", error);
+                alert("Server error occurred");
+            } finally {
+                saveEditBtn.textContent = 'Save Changes';
+                saveEditBtn.disabled = false;
+            }
+        });
+
+        // Utilities to prevent XSS in rendering
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        }
+        
+        function escapeJS(str) {
+            if(!str) return '';
+            return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+        }
+
+    </script>
+</body>
+</html>
